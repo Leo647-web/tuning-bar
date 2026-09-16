@@ -1,0 +1,39 @@
+const data=[("Lackierungen", [("Primärfarbe", 800, 1000), ("Sekundärfarbe", 300, 500), ("Perlmuttfarbe", 300, 500), ("Innenraumfarbe", 100, 300), ("Armaturenfarbe", 100, 300), ("Folierungen", 800, 1000), ("Motor I", 1000, 1000), ("Motor II", 1500, 2000), ("Motor III", 2500, 3000), ("Motor IV", 3500, 4000), ("Bremsen I", 200, 500), ("Bremsen II", 500, 1000), ("Bremsen III", 1000, 1500), ("Panzerung 20%", 300, 1000), ("Panzerung 40%", 800, 1400), ("Panzerung 60%", 1100, 1600), ("Panzerung 80%", 1500, 2200), ("Panzerung 100%", 1800, 2500), ("Getriebe I", 500, 900), ("Getriebe II", 800, 1300), ("Getriebe III", 1000, 1500), ("Fahrwerk I", 100, 200), ("Fahrwerk II", 200, 400), ("Fahrwerk III", 400, 800), ("Fahrwerk IV", 700, 1000), ("Turbo", 2500, 3000)]), ("Anbauteile", [("Scheibentönung 10%", 50, 100), ("Scheibentönung 50%", 100, 200), ("Scheibentönung 60%", 100, 300), ("Scheibentönung 80%", 300, 400), ("Scheibentönung 100%", 400, 500), ("Xenon Lichter", 500, 1000), ("Xenon Farbe", 100, 500), ("Hupe", 1000, 1500), ("Neon-Seite", 100, 200), ("Neon-Heck", 100, 200), ("Neon-Front", 100, 200), ("Neon-Heck-Seiten", 200, 400), ("Neon-Front-Seiten", 200, 400), ("Neon-Seiten-Heck", 200, 400), ("Alle 4 Neons", 1000, 1400), ("Neon-Farbe", 300, 500), ("Felgentyp", 1000, 1200), ("Felgenfarbe", 300, 500), ("Reifendesign", 300, 500), ("Reifen Verbesserung", 800, 1000), ("Reifenrauch", 300, 1000), ("Sturz", 300, 500), ("Spurverbreiterung", 300, 500), ("Fulltuning Motor", 10500, 13500)])];
+let vehicle='middle', selected=[];
+const money=n=>n.toLocaleString('de-DE')+' $';
+function render(){
+ const root=document.getElementById('catalog'); root.innerHTML='';
+ data.forEach(([cat,arr])=>{
+  const sec=document.createElement('section'); sec.className='category';
+  sec.innerHTML='<div class="categoryTitle">'+cat+'</div><div class="grid"></div>';
+  const grid=sec.querySelector('.grid');
+  arr.forEach(([name,m,i])=>{
+   const price=vehicle==='middle'?m:i, yes=selected.some(x=>x.name===name);
+   const el=document.createElement('div'); el.className='item'+(yes?' selected':'');
+   el.innerHTML='<div><div class="name">'+name+'</div><div class="price">'+money(price)+'</div></div><button class="add">'+(yes?'✓':'+')+'</button>';
+   el.querySelector('button').onclick=()=>toggle(name,price); grid.appendChild(el);
+  });
+  root.appendChild(sec);
+ });
+ update();
+}
+function toggle(name,price){
+ const idx=selected.findIndex(x=>x.name===name);
+ if(idx>=0)selected.splice(idx,1);else selected.push({name,price});
+ render();
+}
+function update(){
+ const sub=selected.reduce((s,x)=>s+x.price,0), rate=+document.getElementById('discount').value;
+ const off=Math.round(sub*rate/100);
+ document.getElementById('count').textContent=selected.length+' Positionen';
+ document.getElementById('lines').innerHTML=selected.length?selected.map(x=>'<div class="line"><span>'+x.name+'</span><strong>'+money(x.price)+'</strong></div>').join(''):'<div class="empty">Noch keine Leistungen ausgewählt.</div>';
+ document.getElementById('subtotal').textContent=money(sub);
+ document.getElementById('rate').textContent='('+rate+' %)';
+ document.getElementById('minus').textContent='-'+money(off);
+ document.getElementById('total').textContent=money(sub-off);
+}
+document.querySelectorAll('.vehicleBtn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.vehicleBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');vehicle=b.dataset.class;selected=[];render();});
+document.getElementById('discount').onchange=update;
+document.getElementById('reset').onclick=()=>{selected=[];render();};
+document.getElementById('print').onclick=()=>window.print();
+render();
